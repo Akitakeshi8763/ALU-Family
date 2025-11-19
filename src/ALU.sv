@@ -1,15 +1,28 @@
-module ALU(
-    input logic [31:0] A,
-    input logic [3:0] B,
-    input logic [1:0] SEL,
-    output logic [31:0] RESULT
+typedef enum logic [2:0] {
+  ALU_ADD   = 3'b000,
+  ALU_SUB   = 3'b001,
+  ALU_AND   = 3'b010,
+  ALU_OR    = 3'b011,
+  ALU_XOR   = 3'b100,
+  ALU_SLT   = 3'b101 // Set less than (signed)
+} alu_op_e;
+
+
+module ALU(parameter int N=32) (
+    input logic [N-1:0] A,
+    input logic [N-1:0] B,
+    input alu_op_e op, //op signal with enum type(alu_op_e)
+    output logic [N-1:0] RESULT
 );
-    always_comb begin
-        case (SEL)
-            32'h00000000: RESULT = A + B;        // Addition
-            32'h0000FFFF: RESULT = A - B;        // Subtraction
-            32'hFFFF0000: RESULT = A & B;        // AND operation
-            32'hFFFFFFFF: RESULT = A | B;        // OR operation
-            default: RESULT = 32'b00000000000000000000000000000000;
-        endcase
-    end 
+     always_comb begin
+    unique case (op)
+      ALU_ADD:   RESULT = A + B;
+      ALU_SUB:   RESULT = A - B;
+      ALU_AND:   RESULT = A & B;
+      ALU_OR:    RESULT = A | B;
+      ALU_XOR:   RESULT = A ^ B;
+      ALU_SLT:   RESULT = ($signed(A) < $signed(B)) ? '1 : '0;
+      default:   RESULT = '0;
+    endcase
+    zero = (RESULT == '0);
+  end
